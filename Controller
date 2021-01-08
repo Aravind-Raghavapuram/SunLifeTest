@@ -1,0 +1,104 @@
+({
+	
+    onInit : function(component,event,helper)
+    {
+        
+        var actions = [
+            { label: 'Edit', name: 'Edit' }
+        ],
+        fetchData = {
+            name : 'company.companyName',
+            author: 'name.findName',
+            published : 'address.state'
+        };
+        // Setting column information.To make a column sortable,set sortable as true on component load
+        component.set("v.accountColumns",[
+            {
+                label : 'Name',
+                fieldName : 'linkName',
+                type : 'url',
+                sortable : true,
+                typeAttributes: {label: { fieldName: 'Name' }, target: '_blank'}
+            },
+            {
+                label : 'Account Owner',
+                fieldName : 'OwnerName',
+                type : 'text',
+                sortable : true
+            },
+            {
+                label : 'Phone',
+                fieldName : 'Phone',
+                type : 'text',
+                sortable : false
+            },
+            {
+                label : 'Website',
+                fieldName : 'Website',
+                type : 'text',
+                sortable : false
+            },
+            {
+                label : 'Annual Revenue',
+                fieldName : 'AnnualRevenue',
+                type : 'Number',
+                sortable : false
+            },
+            {
+                label : 'Industry',
+                fieldName : 'Industry',
+                type : 'text',
+                sortable : false
+            },
+            { type: 'action', typeAttributes: { rowActions: actions } }
+            
+        ]);
+        // call helper function to fetch account data from apex
+        helper.getAccountData(component);
+    },
+    
+    //Method gets called by onsort action,
+    handleSort : function(component,event,helper){
+        //Returns the field which has to be sorted
+        var sortBy = event.getParam("fieldName");
+        //returns the direction of sorting like asc or desc
+        var sortDirection = event.getParam("sortDirection");
+        //Set the sortBy and SortDirection attributes
+        component.set("v.sortBy",sortBy);
+        component.set("v.sortDirection",sortDirection);
+        // call sortData helper function
+        helper.sortData(component,sortBy,sortDirection);
+    },
+    
+    handleRowAction: function (component, event, helper) {
+        var action = event.getParam('action');
+        var row = event.getParam('row');
+
+        switch (action.name) {
+            case 'Edit':
+                //alert('Showing Details: ' + row.Id);
+                helper.editRecord(component,row.Id);
+                break;
+            case 'View':
+                 alert('Showing Details: ' + JSON.stringify(row));
+                 //helper.viewAction(component,row.Id);
+                break;
+        }
+    },
+    
+    searchTable : function(cmp,event,helper) {
+        var allRecords = cmp.get("v.accountData");
+        var searchFilter = event.getSource().get("v.value").toUpperCase();
+        
+        var tempArray = [];
+        var i;
+
+        for(i=0; i < allRecords.length; i++){
+            if(allRecords[i].Name && allRecords[i].Name.toUpperCase().indexOf(searchFilter) != -1)
+            {
+                tempArray.push(allRecords[i]);
+            }
+        }
+        cmp.set("v.FilterAccountData",tempArray);
+    }
+})
